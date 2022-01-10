@@ -114,7 +114,7 @@ def main():
 
     # calc homog tables:
     uxm_dict = gen_homogs(df, groups_df['full_path'], args.tmp_dir,
-                          args.verbose, args.rlen, args.force)
+                          args.verbose, args.rlen, args.force, args.threads)
 
     # merge to groups and dump
     for group in sorted(groups_df['group'].unique()):
