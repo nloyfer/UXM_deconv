@@ -11,10 +11,6 @@ from multiprocessing import Pool
 from homog_mem import *
 
 
-# DEF_REFDIR = '/cs/cbio/netanel/data/grail_atlas/data/'
-DEF_REFDIR = '/cs/cbio/sapir/deconv/mix/grail/training_data/'
-DEF_GROUPS = './groups.csv'
-
 ##############################
 #                            #
 #     Loading stuff          #
@@ -34,7 +30,7 @@ def load_markers(mpath, use_um):
     df = pd.read_csv(mpath, sep='\t', names=names, usecols=cols, skiprows=skiprows)
 
     # validation: make sure name column is unique for each marker:
-    if df['name'].str.startswith('chr').sum() != df.shape[0]:
+    if df['name'].str.startswith('chr').sum() != df.shape[0]:  # todo: some references don't start with "chr"!
         eprint(f'Invalid marker file: {mpath}. "name" column must start with "chr"')
         exit(1)
     df['direction'] = 'U'
@@ -48,42 +44,43 @@ def load_markers(mpath, use_um):
     return df
 
 
-def load_groups(groups_path, ref_dir, merged): #, singles):
+def load_groups(groups_path, pats):
+    pats = [op.abspath(validate_file(p)) for p in pats]
+    pats = drop_dup_keep_order(pats)
+    if not groups_path:
+        groups = [pat2name(p) for p in pats]
+        if len(set(groups)) != len(pats):
+            eprint('[uxm build] Error: some pats have identical names!')
+            exit(1)  # TODO: use custom exceptions
+        return pd.DataFrame({'group': groups, 'full_path': pats})
+
     validate_file(groups_path)
     df = pd.read_csv(groups_path, comment='#', index_col=False)
-    df = df[df['include']]
+    if 'include' in df.columns:
+        df = df[df['include']]
     df = df[['name', 'group']]
-    # if singles:
-    df = df[~df['group'].str.contains(':')] # remove merged groups
-    if merged:
-        df = df.drop_duplicates('group').reset_index(drop=True)
-        df['name'] = df['group']
-    df['full_path'] = df['name'].replace(ref_pat_full_paths(df, ref_dir))
+    # TODO: document this, or remove it (but check groups are mutually exclusive?)
+    df = df[~df['group'].str.contains(':')] # remove merged groups. 
+    df['full_path'] = df['name'].replace(ref_pat_full_paths(df, pats))
     return df
 
 
-def ref_pat_full_paths(groups_df, refd):
+def ref_pat_full_paths(groups_df, pats): # TODO: will fail with name subset another name!
     nd = {}
-    names = sorted(groups_df['name'].unique())
-    for name in names:
+    for name in set(groups_df['name']):
 
-        files = [f for f in os.listdir(refd) if name
+        files = [f for f in pats if name
                 in f and f.endswith('.pat.gz')]
-        # if 'Megakaryo' in name: # todo: hack for MK
-            # res = op.join(refd, name) + '.pat.gz'
-            # nd[name] = res
-            # continue
         if ':' not in name:
-            files = [f for f in files if ':' not in f]
+            files = [f for f in files if ':' not in f]  # TODO: address the ":" issue
         if not files:
-            eprint(f'Error: no {name} found in {refd}')
+            eprint(f'Error: no {name} found in supplied pat files')
             exit(1)
         if len(files) > 1:
-            eprint(f'Error: ambiguous name {name} in dir {refd}')
+            eprint(f'Error: ambiguous name {name} in pats')
             eprint('\n'.join(files))
             exit(1)
-        res = op.join(op.abspath(refd), files[0])
-        validate_file(res)
+        res = files[0]
         nd[name] = res
     return nd
 
@@ -108,9 +105,8 @@ def add_col(df, uxm_dict, groups_df, group):
 def main():
     args = parse_args()
     # load markers and groups files
-    mpath = args.markers
-    df = load_markers(mpath, args.use_um)
-    groups_df = load_groups(args.groups, args.ref_dir, args.merged) #, args.singles)
+    df = load_markers(args.markers, args.use_um)
+    groups_df = load_groups(args.groups, args.pats)
 
     # calc homog tables:
     uxm_dict = gen_homogs(df, groups_df['full_path'], args.tmp_dir,
@@ -127,22 +123,22 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--merged', action='store_true',
-            help='set if ref_dir contains merged-by-groups pat files')
     parser.add_argument('--use_um', action='store_true',
             help='Use U and M values for all markers. Otherwise deduce if the marker ' \
             'is U or M from the markers file')
     parser.add_argument('--markers', '-m', required=True,
             help='path to markers file')
-    parser.add_argument('--groups', '-g', default=DEF_GROUPS,
-            help=f'path to groups file [{DEF_GROUPS}]')
+    parser.add_argument('--groups', '-g',
+            help=f'path to group file. If none given, '\
+                   ' each pat gets its own column in the reference atlas')
     parser.add_argument('--output', '-o', required=True,
             help='output path for the atlas')
-    parser.add_argument('--ref_dir', default=DEF_REFDIR,
-            help=f'path to reference atlas pats dir [{DEF_REFDIR}]')
+    parser.add_argument('--pats', required=True, nargs='+',
+            help=f'Reference pat files.') # todo: 1. beta hack. 2. Document it somewhere (groups, pats, subset)
     add_memoiz_args(parser)
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     main()
+
