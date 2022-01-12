@@ -104,7 +104,7 @@ def dump_counts(args, counts, atlas):
     if getpass.getuser() != 'nloyfer':
         return
     counts.loc[atlas.iloc[:,3:].isnull().any(axis=1).values] = np.nan
-    counts = pd.concat([atlas[['name', 'target', 'direction']], counts], axis=1)
+    counts = pd.concat([atlas[['name', 'target']], counts], axis=1)
     counts.to_csv(args.prefix + '.count.csv', index=None, float_format='%.0f')
 
 
