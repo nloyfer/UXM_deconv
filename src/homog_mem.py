@@ -46,6 +46,10 @@ def pat2name(pat):
     return op.basename(op.splitext(op.splitext(pat)[0])[0])
 
 
+def drop_dup_keep_order(lst):
+    seen = set()
+    return [x for x in lst if not (x in seen or seen.add(x))]
+
 def remove_files(files):
     for f in files:
         if op.isfile(f):
@@ -92,7 +96,8 @@ def load_homog(homog_path):
 
 def pat2memfile(pat, tmp_dir_l):
     # get memoization path for a given pat path
-    dir_hash = hashlib.md5(op.dirname(pat).encode()).hexdigest()[:6]
+    dir_hash = hashlib.md5(op.dirname(op.realpath(pat))\
+            .encode()).hexdigest()[:6]
     return op.join(tmp_dir_l, f'{pat2name(pat)}.mem.{dir_hash}.homog.gz')
 
 
