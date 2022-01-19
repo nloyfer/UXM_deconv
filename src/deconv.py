@@ -31,6 +31,7 @@ def load_atlas(atlas_path, ignore=None):
                 exit()
             del df[col]
             df = df[df.target != col]
+    df.reset_index(inplace=True, drop=True)
     return df, list(df.columns[8:])
 
 
