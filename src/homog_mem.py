@@ -11,9 +11,11 @@ from multiprocessing import Pool
 import hashlib
 import gzip
 import tempfile
+from pathlib import Path
 
 
-DEF_TMP_DIR = './tmp_dir'
+dpath = str(Path(op.realpath(__file__)).parent)
+DEF_TMP_DIR = op.join(dpath, 'tmp_dir')
 DEF_NR_THREADS = multiprocessing.cpu_count()
 coord_cols = ['chr', 'start', 'end', 'startCpG', 'endCpG']
 
@@ -261,7 +263,7 @@ def add_memoiz_args(parser):
     parser.add_argument('--force', '-f', action='store_true',
             help='Force run homog.cpp: recreate the whole memoization table ')
     parser.add_argument('--threads', '-@', type=int, default=DEF_NR_THREADS,
-            help='Number of threads [{DEF_NR_THREADS}]')
+            help=f'Number of threads [cpu_count()]')
     parser.add_argument('--rlen', '-l', type=int, default=-1,
             help='minimal CpGs per read required to consider the read.' \
                     ' By default this value is deduced from the atlas name (e.g. atlas.l4.tsv)')
