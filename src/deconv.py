@@ -43,13 +43,14 @@ def decon_single_samp(samp, atlas, counts, weighted, verbose, debug=False):
     :return: the mixture coefficients
     """
 
-    name = samp.columns[1]
+    name = samp.columns[2]
     counts.columns = ['name', 'direction', 'counts']
 
     # remove missing sites from both sample and atlas:
     # TODO: imputation for the atlas?
-    data = samp.merge(atlas.drop_duplicates(['name', 'direction'], ignore_index=True), on=['name', 'direction'], how='inner').copy().dropna(axis=0)
-    data = data.merge(counts.drop_duplicates(['name', 'direction'], ignore_index=True), on=['name', 'direction'], how='left')
+    nd_cols = ['name', 'direction']
+    data = samp.merge(atlas.drop_duplicates(nd_cols, ignore_index=True), on=nd_cols, how='inner').copy().dropna(axis=0)
+    data = data.merge(counts.drop_duplicates(nd_cols, ignore_index=True), on=nd_cols, how='left')
 
     if data.empty:
         eprint(f'Warning: skipping an empty sample {name}')
