@@ -11,6 +11,7 @@ commands = [
     'plot',
     'heatmap',
     'test',
+    'binary',
     ]
 
 def main():
