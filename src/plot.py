@@ -28,7 +28,7 @@ class PlotDeconv:
         self.min_rate = .0
         self.outpath = None
         self.validate_params()
-        self.df = pd.read_csv(args.csv, index_col=0)
+        self.df = pd.read_csv(args.csv, index_col=0).fillna(0)
         self.plot_res()
 
     def validate_params(self):
@@ -139,6 +139,7 @@ class PlotDeconv:
         # adjust layout, save and show
         plt.tight_layout(rect=[0, 0, .83, 1])
         plt.savefig(self.outpath)
+        eprint(f'Dumped figure to {self.outpath}')
         if self.args.show:
             plt.show()
 
@@ -147,8 +148,6 @@ def main():
     args = parse_args()
 
     # validate parameters
-
-
     PlotDeconv(args)
 
 
