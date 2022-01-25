@@ -26,14 +26,14 @@ ggplot(data=data, aes(y=position, x=variable, fill=value)) +
   theme_bw(base_size=18) +
   labs(x="Cell types", y="Markers") + 
   scale_y_reverse(expand=c(0, 0)) +
-  theme(axis.text.x = element_text(angle=90, vjust=1, size=18, hjust=1),
+  theme(axis.text.x = element_text(angle=90, vjust=.5, size=18, hjust=1),
         axis.title.x = element_text(size=18),
         axis.title.y = element_text(size=18, angle=90),
         plot.margin = margin(20, 20, 20, 20),
   ) +
   scale_fill_gradient2(low="yellow", high="blue", mid="white", 
-                       midpoint=0.5,  limit=c(0,1), 
-                       name="Average\nmethylation") 
+                       midpoint=0.5, limit=c(0,1), 
+                       name="U/M score") 
 
 ggsave(out.path, width = 16.1, height = 11.2)
 
