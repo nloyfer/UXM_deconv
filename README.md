@@ -1,1 +1,1 @@
-# UXM_deconv
+# UXM fragment-level deconvolution algorithm
