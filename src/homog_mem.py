@@ -71,14 +71,18 @@ def mkdir_p(dirpath):
 
 
 def clear_mem_file(tmp_dir_l):
-    for d in os.listdir(tmp_dir_l):
-        if not d.endswith('.bed'):
-            continue
-        dd = op.join(tmp_dir_l, d)
-        if not op.isfile(dd):
-            continue
-        if (time.time() - op.getmtime(dd)) > 5 * 60 * 60:
-            os.remove(dd)
+    try:
+        for d in os.listdir(tmp_dir_l):
+            if not d.endswith('.bed'):
+                continue
+            dd = op.join(tmp_dir_l, d)
+            if not op.isfile(dd):
+                continue
+            if (time.time() - op.getmtime(dd)) > 5 * 60 * 60:
+                os.remove(dd)
+    except Exception as e:
+        # no reason to crash over this cleanup process
+        return
 
 
 
@@ -103,11 +107,11 @@ def pat2memfile(pat, tmp_dir_l):
     return op.join(tmp_dir_l, f'{pat2name(pat)}.mem.{dir_hash}.homog.gz')
 
 
-def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, threads):
+def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, threads):
     # multiprocess wrapper for the pat2homog method
     # return a dict {pat: homog table}
     # homog table is markers x [U, X, M]
-    params = [(markers, p, tmp_dir_l, rlen, verb, force)
+    params = [(markers, p, tmp_dir_l, rlen, verb, force, nodump)
                for p in pats]
     p = Pool(threads)
     arr = p.starmap(pat2homog, params)
@@ -123,7 +127,7 @@ def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, threads):
     return res
 
 
-def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, threads):
+def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, nodump, threads):
 
     check_executable('wgbstools')
 
@@ -135,7 +139,7 @@ def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, threads):
     tmp_dir_l = mkdir_p(op.join(mkdir_p(tmp_dir), f'l{rlen}'))
 
     # run compute homog values on missing markers and pats
-    uxm_dict = pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, threads)
+    uxm_dict = pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, threads)
 
     # clean tmp_dir_l from old temp files:
     clear_mem_file(tmp_dir_l)
@@ -155,14 +159,14 @@ def wrap_cpp_tool(pat, markers, tmp_dir_l, rlen, verb):
     # homog file path
 
     # pat to homog.gz:
-    cmd = f'wgbstools homog -f --rlen {rlen} -b {tmp_mpath} {pat} --bed --prefix {uniq_name}'
+    cmd = f'wgbstools homog -f --rlen {rlen} -b {tmp_mpath} {pat} --prefix {uniq_name}'
     so = None if verb else subprocess.PIPE
     subprocess.check_call(cmd, shell=True, stderr=so, stdout=so)
     remove_files([tmp_mpath])
     return uniq_name + '.uxm.bed.gz'
 
 
-def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force):
+def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
 
     mempat = pat2memfile(pat, tmp_dir_l)
     name = pat2name(pat)
@@ -170,7 +174,8 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force):
     # load current markers if exist:
 
     omark = markers.copy()
-    markers = markers.drop_duplicates(subset=coord_cols)
+
+    markers = markers.drop_duplicates(subset=coord_cols).reset_index(drop=True)
     # in case this pat file is unseen before, 
     # or it's mempat is older than the pat, or --force is specified:
     ignore_mem = False
@@ -191,7 +196,7 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force):
 
     # else, find markers not already present in mempat
     else:
-        homog = load_homog(mempat)
+        homog = load_homog(mempat).reset_index(drop=True)
         if homog.empty:
             eprint(f'loaded empty homog for {pat}: {mempat}')
             os.remove(mempat)
@@ -200,6 +205,8 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force):
         remain_mrk = remain_mrk[remain_mrk['U'].isna()]
         if verb and not remain_mrk.empty:
             eprint(f'[ {name} ] found memoization, missing {remain_mrk.shape[0]} markers' )
+            # eprint(remain_mrk)
+            # exit()
     # if all markers are present, return them
     if remain_mrk.empty:
         if verb:
@@ -218,7 +225,7 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force):
     uxm = load_homog(tmp_homog_path)
     # cleanup 
     remove_files([tmp_homog_path])
-    nodump = False
+    nodump = bool(nodump)
     if uxm[['U', 'X', 'M']].values.sum() == 0:
         eprint('\033[91m' + f'WARNING:' + '\033[0m' +
                 f' possibly failed in {pat} - all {uxm.shape[0]} ' \
@@ -258,6 +265,10 @@ def add_memoiz_args(parser):
             f'files [{DEF_TMP_DIR}]')
     parser.add_argument('--verbose', '-v', action='store_true')
     parser.add_argument('--fast', action='store_true')
+    parser.add_argument('--nodump', action='store_true',
+            help='Do not update memoization files. This flag is important ' \
+                 'when running uxm on multiple machines that share the same' \
+                 ' temp_dir')
     # parser.add_argument('--threads', '-@', type=int, default=32,
             # help='number of threads to use [32]')
     parser.add_argument('--force', '-f', action='store_true',
