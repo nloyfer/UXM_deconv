@@ -4,5 +4,10 @@ It generates a reference atlas where the percentages of unmethylated fragments i
 A non-negative least squares (NNLS) algorithm is then used to fit an input sample, and estimate its relative contributions.
 
 
+![alt text](docs/img/Atlas.U25.l4.pdf "U25 atlas")
+This project is developed by Netanel Loyfer and Jonathan Rosenski in [Prof. Tommy Kaplan's lab](https://www.cs.huji.ac.il/~tommy/) at the Hebrew University, Jerusalem, Israel.
+
+
+
 It converts data from standard formats (e.g., bam, bed) into tailored compact yet useful and intuitive formats ([pat](docs/pat_format.md), [beta](docs/beta_format.md)).
 These can be visualized in terminal, or analyzed in different ways - subsample, merge, slice, mix, segment and more.
