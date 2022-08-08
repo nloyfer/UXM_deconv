@@ -7,9 +7,8 @@ A non-negative least squares (NNLS) algorithm is then used to fit an input sampl
     <img src="docs/img/Atlas.U25.l4.png" width="600" height="400" />
 </p>
 <p align='center'>
-    <em>Visualization of the reference atlas published in [Loyfer et al.](https://www.biorxiv.org/content/10.1101/2022.01.24.477547v1)</em>
+    <em>Visualization of the reference atlas published in</em> [Loyfer et al.](https://www.biorxiv.org/content/10.1101/2022.01.24.477547v1)
 </p>
-
 <!--![alt text](docs/img/Atlas.U25.l4.png "U25 atlas")-->
 This project is developed by Netanel Loyfer in [Prof. Tommy Kaplan's lab](https://www.cs.huji.ac.il/~tommy/) at the Hebrew University, Jerusalem, Israel.<br>
 If you are using the UXM deconvolution in a paper, please cite:
