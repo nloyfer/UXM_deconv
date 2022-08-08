@@ -2,17 +2,18 @@ library(ggplot2)
 library(data.table)
 
 args = commandArgs(trailingOnly=TRUE)
-if (length(args) != 2) {
-  stop("Usage: plot_heatmaps.R MARKERS OUTPATH.n", call.=FALSE)
+if (length(args) != 3) {
+  stop("Usage: plot_heatmaps.R MARKERS OUTPATH N.n", call.=FALSE)
 }
 atlas.path <- args[1]
 out.path <- args[2]
+nr.meta.cols <- args[3]
 
 load.atlas <- function(atlas.path) {
   df <- as.data.frame(fread(atlas.path))
   #df <- df[order('target'),]
   name <- paste0(df$chr, ':', df$start, '-', df$end)
-  dd <- df[, 9:ncol(df)]
+  dd <- df[, (nr.meta.cols):ncol(df)]
   dd$name <- name
   dd$position <- seq(1, nrow(df))
   melted_df <- reshape2::melt(dd, id.vars = c('position', 'name'))
