@@ -4,7 +4,7 @@ It generates a reference atlas where the percentages of unmethylated fragments i
 A non-negative least squares (NNLS) algorithm is then used to fit an input sample, and estimate its relative contributions.
 
 <p align='center'>
-    <img src="docs/img/Atlas.U25.l4.png" width="400" height="400" />
+    <img src="docs/img/Atlas.U25.l4.png" width="600" height="400" />
 </p>
 <p align='center'>
     <em>Visualization of the simulated data</em>
