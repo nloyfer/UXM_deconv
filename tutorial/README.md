@@ -13,10 +13,7 @@ export PATH=${PATH}:$PWD
 ## Tutorial
 ### Data and regions
 #### Input samples
-For this short tutorial, we will use the following publicly available samples from the [Roadmap Epigenomic Project](https://www.nature.com/articles/nature14248). The fastq files were downloaded from [GEO](https://www.ncbi.nlm.nih.gov//geo/query/acc.cgi?acc=GSE16256), and mapped to hg19 using [bwa-meth](https://github.com/brentp/bwa-meth). `pat` files were generated using `wgbstools bam2pat`, and finally, the large `pat` files were sliced (using `wgbstools view -L` and `wgbstools index`) into small pat files, containing only reads mapped to regions listed in the bed file `Markers.U25.bed` (see below). 
-
-#### Markers
-We will be using a set of differentialy methylated regions / markers found and published in [Loyfer *et al.* (2022)](https://www.biorxiv.org/content/10.1101/2022.01.24.477547v1) (Supplemental table S4). They are the top (up to) 25 specifically unmethylated blocks for each of 39 healthy human cell types. They are listed here in file `Markers.U25.bed`.
+For this short tutorial, we will use the following publicly available samples from the [Roadmap Epigenomic Project](https://www.nature.com/articles/nature14248). The fastq files were downloaded from [GEO](https://www.ncbi.nlm.nih.gov//geo/query/acc.cgi?acc=GSE16256), and mapped to hg19 using [bwa-meth](https://github.com/brentp/bwa-meth). `pat` files were generated using `wgbstools bam2pat`, and finally, the large `pat` files were sliced (using `wgbstools view -L` and `wgbstools index`) into small pat files, containing only reads mapped to regions listed in the reference atlas. 
 
 
 | SRX  | Tissue  |  Donor |
@@ -29,8 +26,16 @@ We will be using a set of differentialy methylated regions / markers found and p
 | [SRX190161](https://www.ncbi.nlm.nih.gov/sra?term=SRX190161) |  Sigmoid colon cells | STL003
 | [SRX213280](https://www.ncbi.nlm.nih.gov/sra?term=SRX213280) |  Liver cells         | STL011
 
+
+#### Reference atlas
+The reference atlas used for deconvolution is a table where the rows are regions (markers) and the columns are reference samples/cell types. We provide here the a reference atlas [supplemental/Atlas.U25.l4.hg19.tsv](../supplemental/Atlas.U25.l4.hg19.tsv), we published in [Loyfer *et al.* (2022)](https://www.biorxiv.org/content/10.1101/2022.01.24.477547v1). 
+The markers (rows) are the top 25 specifically unmethylated blocks for each of ~40 healthy human cell types. The values are the "proportion of unmethylated reads", as computed from the pat files. <br>
+The `uxm` tool allows you to build your own reference atlas, choose which cell types and samples to include, which markers and more. (see `uxm build --help`. Documentation for this feature will be added soon).
+
+
 ```bash
 $ cd tutorial
+# These are the samples we will be deconvolving
 $ ls -1 data/*pat.gz
 data/Liver_STL011.pat.gz
 data/Lung_STL001.pat.gz
@@ -39,6 +44,31 @@ data/Pancreas_STL002.pat.gz
 data/Pancreas_STL003.pat.gz
 data/Sigmoid_Colon_STL001.pat.gz
 data/Sigmoid_Colon_STL003.pat.gz
+# This is the reference atlas, containing 978 markers
+$ wc -l ../supplemental/Atlas.U25.l4.hg19.tsv 
+901 ../supplemental/Atlas.U25.l4.hg19.tsv
 ```
 
-##### To be continued (last updated on October 7, 2022)
+#### Running deconvolution
+```bash
+$ uxm deconv data/*pat.gz -o output.csv
+dumped atlas to output.csv
+```
+
+#### Plotting deconvolution results
+```bash
+# Plot stacked bar plots for the whole table
+$ uxm plot output.csv -o output.pdf
+dumped figure to output.pdf
+
+# Plot bar plots for only one cell type (e.g., endothel)
+$ uxm plot output.csv --stub Endothel
+dumped figure to output.pdf
+```
+
+##### To be continued (last updated on October 10, 2022)
+coming soon:  <br>
+Multiple available atlases <br>
+--ignore/include flags <br>
+uxm build <br>
+
