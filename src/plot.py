@@ -17,10 +17,7 @@ from homog_mem import *
 # Plotting parameters:
 NR_CHRS_XTICKS = 30         # number of characters to be printed of the xticks
 FIG_SIZE = (15, 7)          # figure size
-# FIG_SIZE = (30, 14)          # figure size
 COLOR_MAP = 'tab10'         # color map. See https://matplotlib.org/users/colormaps.html
-# COLOR_MAP = 'tab20'         # color map. See https://matplotlib.org/users/colormaps.html
-#COLOR_MAP = 'Vega10'
 
 class PlotDeconv:
     def __init__(self, args):
@@ -139,7 +136,7 @@ class PlotDeconv:
         # adjust layout, save and show
         plt.tight_layout(rect=[0, 0, .83, 1])
         plt.savefig(self.outpath)
-        eprint(f'Dumped figure to {self.outpath}')
+        eprint(f'dumped figure to {self.outpath}')
         if self.args.show:
             plt.show()
 
@@ -154,7 +151,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('csv', help='Deconvolution output csv to plot')
-    parser.add_argument('--outpath', '-o', help='output. Default is the same name as CSV, but different suffix')
+    parser.add_argument('--outpath', '-o', help='output. Default is the same name as CSV, but PDF suffix')
     parser.add_argument('--show', action='store_true', help='Show the figure in a pop up window')
     parser.add_argument('--min_rate', type=float, default=1.0,
             help='Cell types with smaller rates are combined to the "Other" category. Range 0-100 (percentages) [1]')
