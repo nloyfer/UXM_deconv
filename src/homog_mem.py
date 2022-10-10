@@ -17,7 +17,8 @@ from pathlib import Path
 dpath = str(Path(op.realpath(__file__)).parent.parent)
 DEF_TMP_DIR = op.join(dpath, 'tmp_dir')
 DEF_ATLAS = op.join(dpath, 'supplemental/Atlas.U25.l4.hg19.tsv')
-DEF_NR_THREADS = multiprocessing.cpu_count()
+# DEF_NR_THREADS = multiprocessing.cpu_count()
+DEF_NR_THREADS = 4
 coord_cols = ['chr', 'start', 'end', 'startCpG', 'endCpG']
 
 ##############################
@@ -191,7 +192,8 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
         ignore_mem = True
     if ignore_mem:
         remove_files([mempat])
-        eprint(msg)
+        if verb:
+            eprint(msg)
         remain_mrk = markers
         homog = pd.DataFrame()
 
@@ -199,15 +201,15 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
     else:
         homog = load_homog(mempat).reset_index(drop=True)
         if homog.empty:
-            eprint(f'loaded empty homog for {pat}: {mempat}')
+            if verb:
+                eprint(f'loaded empty homog for {pat}: {mempat}')
             os.remove(mempat)
             return {pat: homog}
         remain_mrk = markers.merge(homog, how='left')
         remain_mrk = remain_mrk[remain_mrk['U'].isna()]
         if verb and not remain_mrk.empty:
             eprint(f'[ {name} ] found memoization, missing {remain_mrk.shape[0]} markers' )
-            # eprint(remain_mrk)
-            # exit()
+
     # if all markers are present, return them
     if remain_mrk.empty:
         if verb:
@@ -228,9 +230,10 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
     remove_files([tmp_homog_path])
     nodump = bool(nodump)
     if uxm[['U', 'X', 'M']].values.sum() == 0:
-        eprint('\033[91m' + f'WARNING:' + '\033[0m' +
-                f' possibly failed in {pat} - all {uxm.shape[0]} ' \
-                'values are zero. memoization is not updated, to be safe')
+        if verb:
+            eprint('\033[91m' + f'WARNING:' + '\033[0m' +
+                    f' possibly failed in {pat} - all {uxm.shape[0]} ' \
+                    'values are zero. memoization is not updated, to be safe')
         nodump = True
 
     all_markers = pd.concat([homog, uxm])
@@ -270,12 +273,10 @@ def add_memoiz_args(parser):
             help='Do not update memoization files. This flag is important ' \
                  'when running uxm on multiple machines that share the same' \
                  ' temp_dir')
-    # parser.add_argument('--threads', '-@', type=int, default=32,
-            # help='number of threads to use [32]')
     parser.add_argument('--force', '-f', action='store_true',
-            help='Force run homog.cpp: recreate the whole memoization table ')
+            help='Force run homog: recreate the whole memoization table ')
     parser.add_argument('--threads', '-@', type=int, default=DEF_NR_THREADS,
-            help=f'Number of threads [cpu_count()]')
+            help=f'Number of threads [DEF_NR_THREADS]')
     parser.add_argument('--rlen', '-l', type=int, default=-1,
             help='minimal CpGs per read required to consider the read.' \
                     ' By default this value is deduced from the atlas name (e.g. atlas.l4.tsv)')
