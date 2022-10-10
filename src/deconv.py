@@ -152,6 +152,8 @@ def main():
     df.reset_index(inplace=True)
     df.columns = ['CellType'] + list(df.columns)[1:]
     df.to_csv(args.output, float_format='%.7f', index=None)
+    if sys.stdout != args.output:
+        eprint('dumped atlas to', args.output)
 
 
 def parse_args():
