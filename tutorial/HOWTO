@@ -1,8 +1,0 @@
-
-tail +2 ../supplemental/Atlas.U25.l4.tsv > markers.U25.bed
-
-
-foreach f (/cs/cbio/netanel/data/roadmap/data/Pancreas_STL00*pat.gz /cs/cbio/netanel/data/roadmap/data/Lung_STL00*pat.gz /cs/cbio/netanel/data/roadmap/data/Liver_STL011.pat.gz)
-    echo $f:t:r:r
-    wgbstools view  --strip --min_len 4 -L markers.U25.bed $f > $f:t:r && wgbstools index -f $f:t:r && mv $f:t* ./data/
-end
