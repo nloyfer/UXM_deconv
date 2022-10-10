@@ -14,8 +14,9 @@ import tempfile
 from pathlib import Path
 
 
-dpath = str(Path(op.realpath(__file__)).parent)
+dpath = str(Path(op.realpath(__file__)).parent.parent)
 DEF_TMP_DIR = op.join(dpath, 'tmp_dir')
+DEF_ATLAS = op.join(dpath, 'supplemental/Atlas.U25.l4.hg19.tsv')
 DEF_NR_THREADS = multiprocessing.cpu_count()
 coord_cols = ['chr', 'start', 'end', 'startCpG', 'endCpG']
 
