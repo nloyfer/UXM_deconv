@@ -5,6 +5,8 @@ import argparse
 import importlib
 from unittest.mock import patch
 
+VERSION = '0.1.0'
+
 commands = [
     'deconv',
     'build',
@@ -17,6 +19,9 @@ commands = [
 def main():
     if len(sys.argv) < 2 or (len(sys.argv) == 2 and sys.argv[1] in ('-h', '--help')):
         print_help()
+        return
+    elif len(sys.argv) == 2 and sys.argv[1] == '--version':
+        print('uxm version', VERSION)
         return
 
     parser = argparse.ArgumentParser(
@@ -50,6 +55,7 @@ def print_invalid_command(command):
         eprint(f'did you mean \033[01;32m{closets[0]}\033[00m?')
 
 def print_help(command=None):
+    print(f'UXM deconvolution tool, version {VERSION}')
     msg = '\nUsage: uxm <command> [<args>]'
     msg += '\nrun uxm <command> -h for more information'
     msg += '\nOptional commands:\n'
