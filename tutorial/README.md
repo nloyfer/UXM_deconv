@@ -44,7 +44,7 @@ data/Pancreas_STL002.pat.gz
 data/Pancreas_STL003.pat.gz
 data/Sigmoid_Colon_STL001.pat.gz
 data/Sigmoid_Colon_STL003.pat.gz
-# This is the reference atlas, containing 978 markers
+# This is the reference atlas, containing 900 markers
 $ wc -l ../supplemental/Atlas.U25.l4.hg19.tsv 
 901 ../supplemental/Atlas.U25.l4.hg19.tsv
 ```
