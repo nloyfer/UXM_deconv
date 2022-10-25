@@ -41,6 +41,7 @@ def load_markers(mpath, use_um):
     else:
         df.loc[df['mt'] > df['mb'], 'direction'] = 'M'
         del df['mt'], df['mb']
+    # del df['mt'], df['mb']
 
     # atlas must be sorted for wgbstools homog to work...
     df.sort_values(by='startCpG', inplace=True)
@@ -114,7 +115,7 @@ def main():
     # calc homog tables:
     uxm_dict = gen_homogs(df, groups_df['full_path'], args.tmp_dir,
                           args.verbose, args.rlen, args.force,
-                          args.nodump, args.threads)
+                          args.nodump, args.debug, args.threads)
 
     # merge to groups and dump
     for group in sorted(groups_df['group'].unique()):

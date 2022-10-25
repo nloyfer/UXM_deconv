@@ -109,11 +109,11 @@ def pat2memfile(pat, tmp_dir_l):
     return op.join(tmp_dir_l, f'{pat2name(pat)}.mem.{dir_hash}.homog.gz')
 
 
-def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, threads):
+def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, debug, threads):
     # multiprocess wrapper for the pat2homog method
     # return a dict {pat: homog table}
     # homog table is markers x [U, X, M]
-    params = [(markers, p, tmp_dir_l, rlen, verb, force, nodump)
+    params = [(markers, p, tmp_dir_l, rlen, verb, force, nodump, debug)
                for p in pats]
     p = Pool(threads)
     arr = p.starmap(pat2homog, params)
@@ -129,7 +129,7 @@ def pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, threa
     return res
 
 
-def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, nodump, threads):
+def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, nodump, debug, threads):
 
     check_executable('wgbstools')
 
@@ -141,14 +141,14 @@ def gen_homogs(markers, pats, tmp_dir, verb, rlen, force, nodump, threads):
     tmp_dir_l = mkdir_p(op.join(mkdir_p(tmp_dir), f'l{rlen}'))
 
     # run compute homog values on missing markers and pats
-    uxm_dict = pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, threads)
+    uxm_dict = pat2homog_mp_wrap(markers, pats, tmp_dir_l, rlen, verb, force, nodump, debug, threads)
 
     # clean tmp_dir_l from old temp files:
     clear_mem_file(tmp_dir_l)
     return uxm_dict
 
 
-def wrap_cpp_tool(pat, markers, tmp_dir_l, rlen, verb):
+def wrap_cpp_tool(pat, markers, tmp_dir_l, rlen, verb, debug):
     # dump extended markers file (for tabix -R)
     validate_file(pat)
 
@@ -158,17 +158,19 @@ def wrap_cpp_tool(pat, markers, tmp_dir_l, rlen, verb):
     tmp_mpath = uniq_name + '.bed'
     markers[coord_cols].to_csv(tmp_mpath, sep='\t', header=None, index=None)
 
-    # homog file path
-
     # pat to homog.gz:
     cmd = f'wgbstools homog -f --rlen {rlen} -b {tmp_mpath} {pat} --prefix {uniq_name}'
+    if debug:
+        cmd += ' -v '
+        eprint(cmd)
     so = None if verb else subprocess.PIPE
     subprocess.check_call(cmd, shell=True, stderr=so, stdout=so)
-    remove_files([tmp_mpath])
+    if not debug:
+        remove_files([tmp_mpath])
     return uniq_name + '.uxm.bed.gz'
 
 
-def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
+def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump, debug):
 
     mempat = pat2memfile(pat, tmp_dir_l)
     name = pat2name(pat)
@@ -222,7 +224,7 @@ def pat2homog(markers, pat, tmp_dir_l, rlen, verb, force, nodump):
         return {pat: res[['U', 'X', 'M']]}
 
     # otherwise, run compute remaining homog values 
-    tmp_homog_path = wrap_cpp_tool(pat, remain_mrk, tmp_dir_l, rlen, verb)
+    tmp_homog_path = wrap_cpp_tool(pat, remain_mrk, tmp_dir_l, rlen, verb, debug)
 
     # homog.gz to numpy array uxm:
     uxm = load_homog(tmp_homog_path)
@@ -268,7 +270,6 @@ def add_memoiz_args(parser):
             help=f'path to directory to store temporary memoization ' \
             f'files [{DEF_TMP_DIR}]')
     parser.add_argument('--verbose', '-v', action='store_true')
-    parser.add_argument('--fast', action='store_true')
     parser.add_argument('--nodump', action='store_true',
             help='Do not update memoization files. This flag is important ' \
                  'when running uxm on multiple machines that share the same' \

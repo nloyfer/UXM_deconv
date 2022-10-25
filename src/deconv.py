@@ -97,13 +97,13 @@ def subsample(uxm, ss_rate):
         uxm = np.random.binomial(uxm, ss_rate)
     return uxm
 
-def load_pats_homog(atlas, pats, tmp_dir, verb, rlen, force, ss_rate, nodump, threads):
+def load_pats_homog(atlas, pats, tmp_dir, verb, rlen, force, ss_rate, nodump, debug, threads):
     for pat in pats:
         if not pat.endswith('.pat.gz'):
             eprint(f'Invalid input file: {pat}. must end with .pat.gz')
             exit(1)
     pats = [op.abspath(p) for p in pats]
-    uxm_dict = gen_homogs(atlas, pats, tmp_dir, verb, rlen, force, nodump, threads)
+    uxm_dict = gen_homogs(atlas, pats, tmp_dir, verb, rlen, force, nodump, debug, threads)
     samples_df = atlas[['name', 'direction']].copy()
     counts = atlas[['name', 'direction']].copy()
     for pat in pats:
@@ -128,7 +128,7 @@ def main():
     rlen = deduce_l_from_name(args)
     sf, sample_names, counts = load_pats_homog(atlas, args.pats, args.tmp_dir,
                         args.verbose, rlen, args.force, args.sub_sample,
-                        args.nodump, args.threads)
+                        args.nodump, args.debug, args.threads)
 
     # deconvolve samples:
     df = pd.DataFrame(columns=sample_names, index=ref_cells)
