@@ -71,7 +71,7 @@ def decon_single_samp(samp, atlas, counts, verbose, debug=False):
         eprint('ERROR: merge went wrong. Validate your atlas')
         return None, None
     if verbose:
-        eprint('{}: {} \ {} sites'.format(name, data.shape[0], atlas.shape[0]))
+        eprint('{}: {} \ {} markers'.format(name, data.shape[0], atlas.shape[0]))
     del data['name'], data['direction']
 
     samp = data.iloc[:, 0]
@@ -171,7 +171,6 @@ def parse_args():
             help='One or more pat files to deconvolve')
     parser.add_argument('--output', '-o', default=sys.stdout,
             help='output path: a csv file. default is stdout.')
-    parser.add_argument('--debug', '-d', action='store_true')
     parser.add_argument('--sub_sample', '-S', type=float,
             help='subsample from the test sample reads')
     add_memoiz_args(parser)
