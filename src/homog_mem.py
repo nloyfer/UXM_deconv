@@ -82,6 +82,7 @@ def clear_mem_file(tmp_dir_l):
                 continue
             if (time.time() - op.getmtime(dd)) > 5 * 60 * 60:
                 os.remove(dd)
+
     except Exception as e:
         # no reason to crash over this cleanup process
         return
@@ -281,4 +282,5 @@ def add_memoiz_args(parser):
     parser.add_argument('--rlen', '-l', type=int, default=-1,
             help='minimal CpGs per read required to consider the read.' \
                     ' By default this value is deduced from the atlas name (e.g. atlas.l4.tsv)')
+    parser.add_argument('--debug', '-d', action='store_true')
 
