@@ -45,6 +45,7 @@ dumped figure to output.pdf
 This project is developed by Netanel Loyfer in [Prof. Tommy Kaplan's lab](https://www.cs.huji.ac.il/~tommy/) at the Hebrew University, Jerusalem, Israel.<br>
 If you are using the UXM deconvolution in a paper, please cite:
 
-[Loyfer\*, Magenheim\*, Peretz\* *et al.* (2022)](https://www.biorxiv.org/content/10.1101/2022.01.24.477547v1) ‘A human DNA methylation atlas reveals principles of cell type-specific methylation and identifies thousands of cell type-specific regulatory elements’, *bioRxiv.* doi:10.1101/2022.01.24.477547.
+[Loyfer\*, Magenheim\*, Peretz\* *et al.* (2023)](www.nature.com/articles/s41586-022-05580-6) ‘A DNA methylation atlas of normal human
+cell types’, *Nature*.
 
 ### See the [tutorial](tutorial) for more information 
