@@ -25,7 +25,7 @@ export PATH=${PATH}:$PWD
 
 #### Dependencies
 - python 3+
-- pandas, numpy, scipy
+- pandas, matplotlib, numpy, scipy
 - wgbstools
 
 ### Usage examples
