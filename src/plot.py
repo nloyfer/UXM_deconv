@@ -57,7 +57,7 @@ class PlotDeconv:
             return
         others = self.df[self.df < self.min_rate].sum()
         self.df[self.df < self.min_rate] = 0.0
-        self.df = self.df.append(others.rename('other'))
+        self.df = pd.concat([self.df, others.rename('other').to_frame().T])
 
     def gen_bars_colors_hatches(self, nr_tissues):
         """
