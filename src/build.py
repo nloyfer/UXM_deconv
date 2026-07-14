@@ -113,6 +113,9 @@ def main():
     groups_df = load_groups(args.groups, args.pats)
 
     # calc homog tables:
+    if args.rlen < 2:
+        eprint('Error: --rlen / -l is required for build (minimal CpGs per read, e.g. -l 4)')
+        exit(1)
     uxm_dict = gen_homogs(df, groups_df['full_path'], args.tmp_dir,
                           args.verbose, args.rlen, args.force,
                           args.nodump, args.debug, args.threads)
